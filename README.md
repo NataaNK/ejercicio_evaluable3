@@ -8,6 +8,9 @@ RPC's
              rpcsvc-proto 
              rpcbind 
 
+   Comando:  sudo apt install libtirpc-common libtirpc-dev libtirpc3 rpcsvc-proto rpcbind
+         
+
 2) Para compilar el ejemplo suma.x:
 
            rpcgen -NMa suma.x
@@ -20,6 +23,7 @@ RPC's
                              int RESTA(int a, int b) = 2;
                         } = 1;
                 } = 99;
+
 
 3) Editar el Makefile.suma y cambiar:
 

@@ -12,7 +12,6 @@ struct GetValueArgs {
     double V_value2<>;
 };
 
-
 program CLAVES_PROG {
     version CLAVES_VERS {
         int INIT(void) = 1;

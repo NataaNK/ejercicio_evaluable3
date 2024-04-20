@@ -39,6 +39,9 @@ typedef struct GetValueArgs GetValueArgs;
 
 #define CLAVES_PROG 99
 #define CLAVES_VERS 1
+#define MAXSIZE 256
+#define MAX_N 32
+
 
 #if defined(__STDC__) || defined(__cplusplus)
 #define INIT 1

@@ -13,6 +13,7 @@ claves_prog_1(char *host)
 	CLIENT *clnt;
 	enum clnt_stat retval_1;
 	int result_1;
+	int init_1_arg1;
 	enum clnt_stat retval_2;
 	int result_2;
 	SetValueArgs set_value_1_arg1;
@@ -37,23 +38,23 @@ claves_prog_1(char *host)
 	}
 #endif	/* DEBUG */
 
-	retval_1 = init_1(&result_1, clnt);
+	retval_1 = init_1(init_1_arg1, &result_1, clnt);
 	if (retval_1 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_2 = set_value_1(set_value_1_arg1, &result_2, clnt);
+	retval_2 = set_value_1(&set_value_1_arg1, &result_2, clnt);
 	if (retval_2 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_3 = get_value_1(get_value_1_arg1, &result_3, clnt);
+	retval_3 = get_value_1(&get_value_1_arg1, &result_3, clnt);
 	if (retval_3 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_4 = delete_key_1(delete_key_1_arg1, &result_4, clnt);
+	retval_4 = delete_key_1(&delete_key_1_arg1, &result_4, clnt);
 	if (retval_4 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_5 = modify_value_1(modify_value_1_arg1, &result_5, clnt);
+	retval_5 = modify_value_1(&modify_value_1_arg1, &result_5, clnt);
 	if (retval_5 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}

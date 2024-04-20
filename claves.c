@@ -4,87 +4,272 @@
  * as a guideline for developing your own functions.
  */
 
+#include "claves_head.h"
 #include "claves.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
+#include <errno.h>
+
+/*PROTOTIPOS*/
+CLIENT* communication_with_server();
 
 
-void
-claves_prog_1(char *host)
-{
+int init() {
+    // Código para inicializar el servicio
 	CLIENT *clnt;
+	clnt = communication_with_server();
+	if (clnt == NULL){
+		printf("Error al comunicarse con el servidor\n");
+		return -1;
+	}
+
 	enum clnt_stat retval_1;
 	int result_1;
-	enum clnt_stat retval_2;
-	int result_2;
-	SetValueArgs set_value_1_arg1;
-	enum clnt_stat retval_3;
-	int result_3;
-	GetValueArgs get_value_1_arg1;
-	enum clnt_stat retval_4;
-	int result_4;
-	int delete_key_1_arg1;
-	enum clnt_stat retval_5;
-	int result_5;
-	SetValueArgs modify_value_1_arg1;
-	enum clnt_stat retval_6;
-	int result_6;
-	int exist_1_arg1;
-
-#ifndef	DEBUG
-	clnt = clnt_create (host, CLAVES_PROG, CLAVES_VERS, "udp");
-	if (clnt == NULL) {
-		clnt_pcreateerror (host);
-		exit (1);
-	}
-#endif	/* DEBUG */
-
 	retval_1 = init_1(&result_1, clnt);
 	if (retval_1 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		return -1;
 	}
+
+    return 0; // Éxito
+}
+
+
+int set_value(int key, char *value1, int N_value2, double *V_value2) {
+    // Código para insertar el elemento <key, value1, value2>
+    
+    // Comprobar argumentos
+    if (strlen(value1) > 256){
+        printf("Error: Value1 debe ser un string de 255 caracteres o menor\n");
+        return -1;
+    }
+
+    if (N_value2 > 32){
+        printf("Error: N_value2 debe ser 32 o menor\n");
+        return -1;
+    }
+
+	CLIENT *clnt;
+	clnt = communication_with_server();
+	if (clnt == NULL){
+		printf("Error al comunicarse con el servidor\n");
+		return -1;
+	}
+	
+	enum clnt_stat retval_2;
+	int result_2;
+	SetValueArgs set_value_1_arg1;
+	/*
+	struct SetValueArgs {
+				int key;
+				string value1<>;
+				int N_value2;
+				double V_value2<>;
+				};
+	*/
+
+    set_value_1_arg1.key = key;
+	strcpy(set_value_1_arg1.value1, value1);
+    set_value_1_arg1.N_value2 = N_value2;
+
+    for (int i=0; i < N_value2; i++){
+        set_value_1_arg1.V_value2.V_value2_val[i] = V_value2[i];
+    }
+
 	retval_2 = set_value_1(set_value_1_arg1, &result_2, clnt);
 	if (retval_2 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		return -1;
 	}
+
+    return 0; // Éxito
+}
+
+
+int get_value(int key, char *value1, int *N_value2, double *V_value2) {
+    // Código para obtener los valores asociados a la clave key
+
+    // Comprobar argumentos: punteros
+    if (value1 == NULL || N_value2 == NULL || V_value2 == NULL) {
+        printf("Error: los argumentos deben ser punteros no nulos\n");
+        return -1;
+    } else if (sizeof(value1) != sizeof(char *) || sizeof(N_value2) != sizeof(int *) || sizeof(V_value2) != sizeof(double *)) {
+        printf("Error: los argumentos deben ser punteros\n");
+        return -1;
+    }
+
+	CLIENT *clnt;
+	clnt = communication_with_server();
+	if (clnt == NULL){
+		printf("Error al comunicarse con el servidor\n");
+		return -1;
+	}
+
+	enum clnt_stat retval_3;
+	int result_3;
+	GetValueArgs get_value_1_arg1;
+	/*	
+	struct GetValueArgs {
+				int key;
+				string value1<>;
+				int *N_value2;
+				double V_value2<>;
+			};
+	*/
+
+    get_value_1_arg1.key = key;
+
 	retval_3 = get_value_1(get_value_1_arg1, &result_3, clnt);
 	if (retval_3 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		return -1;
 	}
+
+    /* Obtener valores e asignarlos a las variables metidas
+    por parámetro*/
+    strcpy(value1, get_value_1_arg1.value1);
+    *N_value2 = get_value_1_arg1.N_value2;
+    for (int i=0; i < get_value_1_arg1.N_value2; i++){
+        V_value2[i] = get_value_1_arg1.V_value2.V_value2_val[i];
+    }
+
+
+    return 0; // Éxito
+}
+
+
+
+int delete_key(int key) {
+    // Código para borrar el elemento cuya clave es key
+
+	CLIENT *clnt;
+	clnt = communication_with_server();
+	if (clnt == NULL){
+		printf("Error al comunicarse con el servidor\n");
+		return -1;
+	}
+
+	enum clnt_stat retval_4;
+	int result_4;
+	int delete_key_1_arg1;
+	
+    delete_key_1_arg1 = key;
+
+
 	retval_4 = delete_key_1(delete_key_1_arg1, &result_4, clnt);
 	if (retval_4 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		return -1;
 	}
+    
+    return 0; // Éxito
+}
+
+
+
+int modify_value(int key, char *value1, int N_value2, double *V_value2) {
+    // Código para modificar los valores asociados a la clave key
+
+    // Comprobar argumentos
+
+    if (strlen(value1) > 256){
+        printf("Error: Value1 debe ser un string de 255 caracteres o menor\n");
+        return -1;
+    }
+
+    if (N_value2 > 32){
+        printf("Error: N_value2 debe ser 32 o menor\n");
+        return -1;
+    }
+    
+
+	CLIENT *clnt;
+	clnt = communication_with_server();
+	if (clnt == NULL){
+		printf("Error al comunicarse con el servidor\n");
+		return -1;
+	}
+
+	enum clnt_stat retval_5;
+	int result_5;
+	SetValueArgs modify_value_1_arg1;
+	/*
+	struct SetValueArgs {
+				int key;
+				string value1<>;
+				int N_value2;
+				double V_value2<>;
+				};
+	*/
+    modify_value_1_arg1.key = key;
+	strcpy(modify_value_1_arg1.value1, value1);
+    modify_value_1_arg1.N_value2 = N_value2;
+	
+    for (int i=0; i < N_value2; i++){
+        modify_value_1_arg1.V_value2.V_value2_val[i] = V_value2[i];
+    }
+
+
 	retval_5 = modify_value_1(modify_value_1_arg1, &result_5, clnt);
 	if (retval_5 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		return -1;
 	}
+
+    return 0; // Éxito
+}
+
+
+
+int exist(int key) {
+    // Código para determinar si existe un elemento con clave key
+
+	CLIENT *clnt;
+	clnt = communication_with_server();
+	if (clnt == NULL){
+		printf("Error al comunicarse con el servidor\n");
+		return -1;
+	}
+
+	enum clnt_stat retval_6;
+	int result_6;
+	int exist_1_arg1;
+	
+    exist_1_arg1 = key;
+
 	retval_6 = exist_1(exist_1_arg1, &result_6, clnt);
 	if (retval_6 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		return -1;
 	}
-#ifndef	DEBUG
-	clnt_destroy (clnt);
-#endif	 /* DEBUG */
+	
+    // Campo clave conttiene si se encontró
+    return result_6; 
 }
 
 
-int
-main (int argc, char *argv[])
-{
-	char *host;
-
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (-1);
-	}
 
 
+CLIENT* communication_with_server(){
 	// Obtener variable de entorno
+	char *host;
     host = getenv("IP_TUPLAS");
     if (host == NULL){
         printf("Variable IP_TUPLAS no definida\n");
-        exit (-1);
+        return NULL;
     }
 
-	claves_prog_1 (host);
-	exit (0);
+	CLIENT *clnt;
+	clnt = clnt_create (host, CLAVES_PROG, CLAVES_VERS, "tcp");
+	if (clnt == NULL) {
+		clnt_pcreateerror (host);
+		return NULL;
+	}
+
+	return clnt;
 }
+

@@ -14,7 +14,7 @@
 #include <stddef.h> 
 #include <errno.h> 
 #include <signal.h> 
-#include "claves.h"
+#include "claves_head.h"
 
 /* Mutex para proteger el acceso al archivo data.json */
 pthread_mutex_t mutex_archivo;

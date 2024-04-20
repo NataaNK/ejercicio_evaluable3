@@ -9,12 +9,12 @@ CJSON_LIB = $(CJSON_DIR)/libcjson.so
 CJSON_URL = https://github.com/DaveGamble/cJSON.git
 
 # Files
-SOURCES.x = claves.x
+SOURCES.x = claves_iu.x
 CLIENT_SRC = cliente.c
 LIB_SRC = claves.c
 LIB_HEADER = claves.h
 
-TARGETS = claves.h claves_xdr.c claves_clnt.c claves_svc.c claves.c servidor.c cliente.c
+TARGETS = claves_head.h claves_xdr.c claves_clnt.c claves_svc.c claves.c servidor.c cliente.c
 
 # Object files
 OBJECTS_CLNT = claves_clnt.o claves.o claves_xdr.o
@@ -35,7 +35,7 @@ servidor: $(OBJECTS_SVC)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 # Link the application client
-cliente: $(CLIENT_SRC) $(OBJECTS_CLNT) $(LIBRARY)
+cliente: $(CLIENT_SRC) $(LIBRARY)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 # Library compilation

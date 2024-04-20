@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "claves.h"
+#define MAXSIZE 256
+#define MAX_N 32
 
 int main(int argc, char *argv[]){
     /* 

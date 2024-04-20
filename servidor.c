@@ -155,7 +155,7 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		*result = -1;  
 		return retval;
 	}
-
+	
 	// Liberar JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
@@ -225,6 +225,7 @@ get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
 	*/
 	strcpy(&arg1.value1, value1_str);
 	*arg1.N_value2 = value2_N_int;
+	arg1.V_value2.V_value2_len = value2_N_int;
 	for (int i = 0; i < value2_N_int; i++) {
 		arg1.V_value2.V_value2_val[i] = double_vector[i];
 	}

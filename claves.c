@@ -14,8 +14,11 @@
 #include <signal.h>
 #include <errno.h>
 
+
+
 /*PROTOTIPOS*/
 CLIENT* communication_with_server();
+void handler_SIGSEGV(int sig);
 
 
 int init() {
@@ -43,6 +46,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
     // Código para insertar el elemento <key, value1, value2>
     
     // Comprobar argumentos
+    signal(SIGSEGV, handler_SIGSEGV);
     if (strlen(value1) > 256){
         printf("Error: Value1 debe ser un string de 255 caracteres o menor\n");
         return -1;
@@ -59,7 +63,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 		printf("Error al comunicarse con el servidor\n");
 		return -1;
 	}
-	
+
 	enum clnt_stat retval_2;
 	int result_2;
 	SetValueArgs set_value_1_arg1;
@@ -71,10 +75,11 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 				double V_value2<>;
 				};
 	*/
-
     set_value_1_arg1.key = key;
+
 	strcpy(set_value_1_arg1.value1, value1);
     set_value_1_arg1.N_value2 = N_value2;
+	set_value_1_arg1.V_value2.V_value2_len = N_value2;
 
     for (int i=0; i < N_value2; i++){
         set_value_1_arg1.V_value2.V_value2_val[i] = V_value2[i];
@@ -94,6 +99,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
     // Código para obtener los valores asociados a la clave key
 
     // Comprobar argumentos: punteros
+    signal(SIGSEGV, handler_SIGSEGV);
     if (value1 == NULL || N_value2 == NULL || V_value2 == NULL) {
         printf("Error: los argumentos deben ser punteros no nulos\n");
         return -1;
@@ -175,7 +181,7 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
     // Código para modificar los valores asociados a la clave key
 
     // Comprobar argumentos
-
+    signal(SIGSEGV, handler_SIGSEGV);
     if (strlen(value1) > 256){
         printf("Error: Value1 debe ser un string de 255 caracteres o menor\n");
         return -1;
@@ -208,6 +214,7 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
     modify_value_1_arg1.key = key;
 	strcpy(modify_value_1_arg1.value1, value1);
     modify_value_1_arg1.N_value2 = N_value2;
+	modify_value_1_arg1.V_value2.V_value2_len = N_value2;
 	
     for (int i=0; i < N_value2; i++){
         modify_value_1_arg1.V_value2.V_value2_val[i] = V_value2[i];
@@ -252,8 +259,6 @@ int exist(int key) {
 }
 
 
-
-
 CLIENT* communication_with_server(){
 	// Obtener variable de entorno
 	char *host;
@@ -273,3 +278,9 @@ CLIENT* communication_with_server(){
 	return clnt;
 }
 
+void handler_SIGSEGV(int sig){
+    printf("Error, revise los argumentos introducidos: Debe introducirse un string en valor1,\n");
+    printf("value2_N debe corresponder con el tamaño real del vector, los pointers en modify_value()\n");
+    printf("deben ser válidos, ...\n");
+    exit(sig);
+}

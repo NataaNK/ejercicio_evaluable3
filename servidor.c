@@ -135,6 +135,7 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		printf("Set_value() error: La clave %d ya existe.\n", arg1.key);
 		retval = -1;
 		*result = -1;  
+		cJSON_Delete(json);
 		return retval;
 	}
 
@@ -153,6 +154,8 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		perror("Error: Unable to write on the file\n");
 		retval = -1;
 		*result = -1;  
+		cJSON_free(json_str);
+        cJSON_Delete(json);
 		return retval;
 	}
 	

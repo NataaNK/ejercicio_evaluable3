@@ -35,9 +35,11 @@ int init() {
 	retval_1 = init_1(&result_1, clnt);
 	if (retval_1 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		clnt_destroy( clnt );
 		return -1;
 	}
 
+	clnt_destroy( clnt );
     return 0; // Éxito
 }
 
@@ -88,9 +90,11 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 	retval_2 = set_value_1(set_value_1_arg1, &result_2, clnt);
 	if (retval_2 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		clnt_destroy( clnt );
 		return -1;
 	}
 
+	clnt_destroy( clnt );
     return 0; // Éxito
 }
 
@@ -132,6 +136,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 	retval_3 = get_value_1(get_value_1_arg1, &result_3, clnt);
 	if (retval_3 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		clnt_destroy( clnt );
 		return -1;
 	}
 
@@ -143,7 +148,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
         V_value2[i] = get_value_1_arg1.V_value2.V_value2_val[i];
     }
 
-
+	clnt_destroy( clnt );
     return 0; // Éxito
 }
 
@@ -169,9 +174,11 @@ int delete_key(int key) {
 	retval_4 = delete_key_1(delete_key_1_arg1, &result_4, clnt);
 	if (retval_4 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		clnt_destroy( clnt );
 		return -1;
 	}
     
+	clnt_destroy( clnt );
     return 0; // Éxito
 }
 
@@ -224,9 +231,11 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 	retval_5 = modify_value_1(modify_value_1_arg1, &result_5, clnt);
 	if (retval_5 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		clnt_destroy( clnt );
 		return -1;
 	}
 
+	clnt_destroy( clnt );
     return 0; // Éxito
 }
 
@@ -251,10 +260,11 @@ int exist(int key) {
 	retval_6 = exist_1(exist_1_arg1, &result_6, clnt);
 	if (retval_6 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
+		clnt_destroy( clnt );
 		return -1;
 	}
 	
-    // Campo clave conttiene si se encontró
+    clnt_destroy( clnt );
     return result_6; 
 }
 

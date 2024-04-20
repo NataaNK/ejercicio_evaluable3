@@ -35,7 +35,7 @@ servidor: $(OBJECTS_SVC)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 # Link the application client
-cliente: $(CLIENT_SRC) $(OBJECTS_CLNT) $(LIBRARY)
+cliente: $(CLIENT_SRC) $(LIBRARY)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 # Library compilation

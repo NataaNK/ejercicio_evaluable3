@@ -143,7 +143,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 	get_value_1_arg1.V_value2.V_value2_len = *N_value2;
 	get_value_1_arg1.V_value2.V_value2_val = V_value2;
 
-	retval_3 = get_value_1(&get_value_1_arg1, &result_3, clnt);
+	retval_3 = get_value_1(get_value_1_arg1, &result_3, clnt);
 	if (retval_3 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 		clnt_destroy( clnt );

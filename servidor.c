@@ -122,7 +122,7 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 
 
 bool_t
-get_value_1_svc(GetValueArgs *arg1, int *result,  struct svc_req *rqstp)
+get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
 {
 	bool_t retval = 0;
 	*result = 0;  
@@ -148,10 +148,10 @@ get_value_1_svc(GetValueArgs *arg1, int *result,  struct svc_req *rqstp)
 		};
 	*/
 	char list_key[MAXSIZE];
-	sprintf(list_key, "%d", arg1->key);
+	sprintf(list_key, "%d", arg1.key);
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
-		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1->key);
+		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1.key);
 		retval = -1;
 		*result = -1;  
 		cJSON_Delete(json);
@@ -183,15 +183,15 @@ get_value_1_svc(GetValueArgs *arg1, int *result,  struct svc_req *rqstp)
 		};
 	*/
 	
-	strcpy(arg1->value1, value1_str);
-	arg1->N_value2 = value2_N_int;
-	arg1->V_value2.V_value2_len = value2_N_int;
+	strcpy(arg1.value1, value1_str);
+	arg1.N_value2 = value2_N_int;
+	arg1.V_value2.V_value2_len = value2_N_int;
 	
 	for (int i = 0; i < value2_N_int; i++) {
-		arg1->V_value2.V_value2_val[i] = double_vector[i];
+		arg1.V_value2.V_value2_val[i] = double_vector[i];
 	}
 
-	printf("\n VALORES EN SERVER: %s %d %d %f\n", arg1->value1, arg1->N_value2, arg1->V_value2.V_value2_len, arg1->V_value2.V_value2_val[0]);
+	printf("\n VALORES EN SERVER: %s %d %d %f\n", arg1.value1, arg1.N_value2, arg1.V_value2.V_value2_len, arg1.V_value2.V_value2_val[0]);
 	fflush(stdout);
 	cJSON_Delete(json);
 	free(double_vector);

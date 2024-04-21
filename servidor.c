@@ -17,61 +17,13 @@
 #include "claves_head.h"
 
 /* Mutex para proteger el acceso al archivo data.json */
-pthread_mutex_t mutex_archivo;
+//pthread_mutex_t mutex_archivo;
 
 
-/*Funciones de lectura y escritura de data.json*/
-cJSON* read_json(char *file_path){
-	pthread_mutex_lock(&mutex_archivo); // Adquirir el mutex antes de leer
+/* PROTOTIPOS */
+cJSON* read_json(char *file_path);
+int write_json(char *file_path, char *str);
 
-	FILE *fp = fopen(file_path, "r"); 
-	if (fp == NULL) { 
-		perror("Error: Unable to open the file.\n"); 
-		return NULL; 
-	} 
-
-	// Leer contenido de la base de datos, tamaño dinámico
-	char *buffer = NULL;
-	size_t file_size = 0;
-	fseek(fp, 0, SEEK_END);
-	file_size = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
-	buffer = (char *)malloc(file_size + 1);
-	fread(buffer, 1, file_size, fp);
-	buffer[file_size] = '\0';
-	fclose(fp); 
-
-	pthread_mutex_unlock(&mutex_archivo); // Liberar el mutex después de leer
-
-	// Parse los datos del json
-	cJSON *json = cJSON_Parse(buffer); 
-	if (json == NULL) { 
-		const char *error_ptr = cJSON_GetErrorPtr(); 
-		if (error_ptr != NULL) { 
-			printf("Error: %s\n", error_ptr); 
-		} 
-		cJSON_Delete(json); 
-		return NULL; 
-	} 
-	return json;
-}
-
-int write_json(char *file_path, char *str){
-	pthread_mutex_lock(&mutex_archivo); // Adquirir el mutex antes de escribir
-
-	FILE *fp = fopen(file_path, "w"); 
-	if (fp == NULL) { 
-		perror("Error: Unable to open the file.\n"); 
-		return -1; 
-	} 
-
-	fputs(str, fp);
-	fclose(fp); 
-
-	pthread_mutex_unlock(&mutex_archivo); // Liberar el mutex después de escribir
-
-	return 0;
-}
 
 
 bool_t
@@ -84,9 +36,9 @@ init_1_svc(int *result, struct svc_req *rqstp)
 	remove("data.json");
 	
 	// Crear nueva base de datos
-	pthread_mutex_lock(&mutex_archivo);
+	//pthread_mutex_lock(&mutex_archivo);
 	FILE *fp = fopen("data.json", "w"); 
-	pthread_mutex_unlock(&mutex_archivo);
+	//pthread_mutex_unlock(&mutex_archivo);
 	if (fp == NULL) { 
 		perror("Error: Unable to open the file.\n"); 
 		retval = -1;
@@ -102,6 +54,7 @@ init_1_svc(int *result, struct svc_req *rqstp)
 	return retval;
 }
 
+
 bool_t
 set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 {
@@ -114,6 +67,7 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		perror("Error: Unable to read the json file\n");
 		retval = -1;
 		*result = -1;  
+		cJSON_Delete(json);
 		return retval;
 	}
 
@@ -179,6 +133,7 @@ get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		perror("Error: Unable to read the json file\n");
 		retval = -1;
 		*result = -1;  
+		cJSON_Delete(json);
 		return retval;
 	}
 	
@@ -199,6 +154,7 @@ get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1.key);
 		retval = -1;
 		*result = -1;  
+		cJSON_Delete(json);
 		return retval;
 	}
 	
@@ -226,17 +182,21 @@ get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
 			double V_value2<>;
 		};
 	*/
-	strcpy(&arg1.value1, value1_str);
+	strcpy(arg1.value1, value1_str);
 	*arg1.N_value2 = value2_N_int;
 	arg1.V_value2.V_value2_len = value2_N_int;
+	
 	for (int i = 0; i < value2_N_int; i++) {
 		arg1.V_value2.V_value2_val[i] = double_vector[i];
 	}
-	free(double_vector);
 
+
+	cJSON_Delete(json);
+	free(double_vector);
 
 	return retval;
 }
+
 
 bool_t
 delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
@@ -250,6 +210,7 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		perror("Error: Unable to read the json file\n");
 		retval = -1;
 		*result = -1; 
+		cJSON_Delete(json);
 		return retval;
 	}
 
@@ -261,6 +222,7 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		printf("Delete_key() error: La clave %d no está en la base de datos.\n", arg1);
 		retval = -1;
 		*result = -1; 
+		cJSON_Delete(json);
 		return retval;
 	}
 
@@ -274,6 +236,8 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		perror("Error: Unable to write on the file\n");
 		retval = -1;
 		*result = -1;
+		cJSON_free(json_str); 
+		cJSON_Delete(json);
 		return retval;
 	}
 
@@ -297,6 +261,7 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 		perror("Error: Unable to read the json file\n");
 		retval = -1;
 		*result = -1;
+		cJSON_Delete(json);
 		return retval;
 	}
 
@@ -315,6 +280,7 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 		printf("Modify_value() error: La clave %d no está en la base de datos.\n", arg1.key);
 		retval = -1;
 		*result = -1;
+		cJSON_Delete(json);
 		return retval;
 	}
 
@@ -330,6 +296,8 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 		perror("Error: Unable to write on the file\n");
 		retval = -1;
 		*result = -1;
+		cJSON_free(json_str); 
+		cJSON_Delete(json);
 		return retval;
 	}
 
@@ -352,6 +320,7 @@ exist_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		perror("Error: Unable to read the json file\n");
 		retval = -1;
 		*result = -1;
+		cJSON_Delete(json);
 		return retval;
 	}
 	
@@ -373,6 +342,62 @@ exist_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 	
 	return retval;
 }
+
+
+
+/*Funciones de lectura y escritura de data.json*/
+cJSON* read_json(char *file_path){
+	//pthread_mutex_lock(&mutex_archivo); // Adquirir el mutex antes de leer
+
+	FILE *fp = fopen(file_path, "r"); 
+	if (fp == NULL) { 
+		perror("Error: Unable to open the file.\n"); 
+		return NULL; 
+	} 
+
+	// Leer contenido de la base de datos, tamaño dinámico
+	char *buffer = NULL;
+	size_t file_size = 0;
+	fseek(fp, 0, SEEK_END);
+	file_size = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+	buffer = (char *)malloc(file_size + 1);
+	fread(buffer, 1, file_size, fp);
+	buffer[file_size] = '\0';
+	fclose(fp); 
+
+	//pthread_mutex_unlock(&mutex_archivo); // Liberar el mutex después de leer
+
+	// Parse los datos del json
+	cJSON *json = cJSON_Parse(buffer); 
+	if (json == NULL) { 
+		const char *error_ptr = cJSON_GetErrorPtr(); 
+		if (error_ptr != NULL) { 
+			printf("Error: %s\n", error_ptr); 
+		} 
+		cJSON_Delete(json); 
+		return NULL; 
+	} 
+	return json;
+}
+
+int write_json(char *file_path, char *str){
+	//pthread_mutex_lock(&mutex_archivo); // Adquirir el mutex antes de escribir
+
+	FILE *fp = fopen(file_path, "w"); 
+	if (fp == NULL) { 
+		perror("Error: Unable to open the file.\n"); 
+		return -1; 
+	} 
+
+	fputs(str, fp);
+	fclose(fp); 
+
+	//pthread_mutex_unlock(&mutex_archivo); // Liberar el mutex después de escribir
+
+	return 0;
+}
+
 
 int
 claves_prog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)

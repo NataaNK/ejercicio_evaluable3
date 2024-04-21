@@ -112,6 +112,12 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
         return -1;
     }
 
+    // Inicialización de los valores antes de su uso
+    memset(value1, 0, MAXSIZE); 
+    *N_value2 = MAX_N;          
+    memset(V_value2, 0, sizeof(double) * MAX_N); 
+
+
 	CLIENT *clnt;
 	clnt = communication_with_server();
 	if (clnt == NULL){
@@ -130,8 +136,11 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 				double V_value2<>;
 			};
 	*/
-
     get_value_1_arg1.key = key;
+	get_value_1_arg1.value1 = value1;
+	get_value_1_arg1.N_value2 = N_value2;
+	get_value_1_arg1.V_value2.V_value2_len = *N_value2;
+	get_value_1_arg1.V_value2.V_value2_val = V_value2;
 
 	retval_3 = get_value_1(get_value_1_arg1, &result_3, clnt);
 	if (retval_3 != RPC_SUCCESS) {
@@ -143,7 +152,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
     /* Obtener valores e asignarlos a las variables metidas
     por parámetro*/
     strcpy(value1, get_value_1_arg1.value1);
-    *N_value2 = get_value_1_arg1.N_value2;
+    *N_value2 = *get_value_1_arg1.N_value2;
     for (int i=0; i < get_value_1_arg1.N_value2; i++){
         V_value2[i] = get_value_1_arg1.V_value2.V_value2_val[i];
     }

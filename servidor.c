@@ -16,14 +16,10 @@
 #include <signal.h> 
 #include "claves_iu.h"
 
-/* Mutex para proteger el acceso al archivo data.json */
-//pthread_mutex_t mutex_archivo;
-
 
 /* PROTOTIPOS */
 cJSON* read_json(char *file_path);
 int write_json(char *file_path, char *str);
-
 
 
 bool_t
@@ -36,9 +32,8 @@ init_1_svc(int *result, struct svc_req *rqstp)
 	remove("data.json");
 	
 	// Crear nueva base de datos
-	//pthread_mutex_lock(&mutex_archivo);
 	FILE *fp = fopen("data.json", "w"); 
-	//pthread_mutex_unlock(&mutex_archivo);
+
 	if (fp == NULL) { 
 		perror("Error: Unable to open the file.\n"); 
 		retval = FALSE;
@@ -142,7 +137,12 @@ get_value_1_svc(int arg1, GetValueResponse *result,  struct svc_req *rqstp)
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
 		sprintf(result->error_msg, "Get_value() error: La clave %d no está en la base de datos.\n", arg1);
-		retval = FALSE;
+		result->value1 = malloc(strlen("error") + 1);
+		strcpy(result->value1, "error");  
+		result->N_value2 = 0;
+		result->V_value2.V_value2_len = 1;
+		result->V_value2.V_value2_val = malloc(sizeof(double));
+		result->V_value2.V_value2_val[0] = 0;
 		cJSON_Delete(json);
 		return retval;
 	}
@@ -210,7 +210,6 @@ delete_key_1_svc(int arg1, Response *result,  struct svc_req *rqstp)
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
 		sprintf(result->error_msg, "Delete_key() error: La clave %d no está en la base de datos.\n", arg1);
-		retval = FALSE;
 		result->result = -1; 
 		cJSON_Delete(json);
 		return retval;
@@ -270,7 +269,6 @@ modify_value_1_svc(SetValueArgs arg1, Response *result,  struct svc_req *rqstp){
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
 		sprintf(result->error_msg, "Modify_value() error: La clave %d no está en la base de datos.\n", arg1.key);
-		retval = FALSE;
 		result->result = -1;
 		cJSON_Delete(json);
 		return retval;
@@ -339,7 +337,6 @@ exist_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 
 /*Funciones de lectura y escritura de data.json*/
 cJSON* read_json(char *file_path){
-	//pthread_mutex_lock(&mutex_archivo); // Adquirir el mutex antes de leer
 
 	FILE *fp = fopen(file_path, "r"); 
 	if (fp == NULL) { 
@@ -358,7 +355,6 @@ cJSON* read_json(char *file_path){
 	buffer[file_size] = '\0';
 	fclose(fp); 
 
-	//pthread_mutex_unlock(&mutex_archivo); // Liberar el mutex después de leer
 
 	// Parse los datos del json
 	cJSON *json = cJSON_Parse(buffer); 
@@ -374,7 +370,6 @@ cJSON* read_json(char *file_path){
 }
 
 int write_json(char *file_path, char *str){
-	//pthread_mutex_lock(&mutex_archivo); // Adquirir el mutex antes de escribir
 
 	FILE *fp = fopen(file_path, "w"); 
 	if (fp == NULL) { 
@@ -384,8 +379,6 @@ int write_json(char *file_path, char *str){
 
 	fputs(str, fp);
 	fclose(fp); 
-
-	//pthread_mutex_unlock(&mutex_archivo); // Liberar el mutex después de escribir
 
 	return 0;
 }
@@ -397,3 +390,4 @@ claves_prog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)
 	xdr_free (xdr_result, result);
 	return 1;
 }
+

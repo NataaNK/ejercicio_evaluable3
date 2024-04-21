@@ -167,12 +167,13 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 
 	retval_3 = get_value_1(get_value_1_arg1, &get_value_response_1, clnt);
 	if (retval_3 != RPC_SUCCESS) {
-		if (strcmp(get_value_response_1.error_msg, "") != 0){
-			printf("%s", get_value_response_1.error_msg);
-		}
-		else {
-			clnt_perror (clnt, "call failed");
-		}
+		clnt_perror (clnt, "call failed");
+		clnt_destroy( clnt );
+		return -1;
+	}
+	
+	if (strcmp(get_value_response_1.error_msg, "") != 0){
+		printf("%s", get_value_response_1.error_msg);
 		clnt_destroy( clnt );
 		return -1;
 	}
@@ -209,12 +210,13 @@ int delete_key(int key) {
 
 	retval_4 = delete_key_1(delete_key_1_arg1, &result_4, clnt);
 	if (retval_4 != RPC_SUCCESS) {
-		if (strcmp(result_4.error_msg, "") != 0){
-			printf("%s", result_4.error_msg);
-		}
-		else {
-			clnt_perror (clnt, "call failed");
-		}
+		clnt_perror (clnt, "call failed");
+		clnt_destroy( clnt );
+		return -1;
+	}
+
+	if (strcmp(result_4.error_msg, "") != 0){
+		printf("%s", result_4.error_msg);
 		clnt_destroy( clnt );
 		return -1;
 	}
@@ -274,12 +276,17 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 
 	retval_5 = modify_value_1(modify_value_1_arg1, &result_5, clnt);
 	if (retval_5 != RPC_SUCCESS) {
-		if (strcmp(result_5.error_msg, "") != 0){
-			printf("%s", result_5.error_msg);
-		}
-		else {
-			clnt_perror (clnt, "call failed");
-		}
+		clnt_perror (clnt, "call failed");
+		clnt_destroy( clnt );
+		free(modify_value_1_arg1.value1);
+		free(modify_value_1_arg1.V_value2.V_value2_val);
+		return -1;
+	}
+
+	if (strcmp(result_5.error_msg, "") != 0){
+		printf("%s", result_5.error_msg);
+		free(modify_value_1_arg1.value1);
+		free(modify_value_1_arg1.V_value2.V_value2_val);
 		clnt_destroy( clnt );
 		return -1;
 	}

@@ -1,0 +1,39 @@
+int main() {
+    pthread_attr_t t_attr;	
+	pthread_mutex_init(&mutex_mensaje, NULL);
+	pthread_cond_init(&cond_mensaje, NULL);
+	pthread_mutex_init(&mutex_archivo, NULL);
+	pthread_attr_init(&t_attr);
+	pthread_attr_setdetachstate(&t_attr, PTHREAD_CREATE_DETACHED);
+
+    while (true) {
+        struct svc_req *rqstp = accept_request(); // Aceptar solicitudes
+        pthread_t thread;
+        if (pthread_create(&thread, &t_attr, handle_request, (void *)rqstp) == 0) {
+            // se espera a que el thread copie el mensaje 
+            pthread_mutex_lock(&mutex_mensaje);
+            while (mensaje_no_copiado){
+                pthread_cond_wait(&cond_mensaje, &mutex_mensaje);
+            }
+            mensaje_no_copiado = true;
+            pthread_mutex_unlock(&mutex_mensaje);
+        } 
+    }
+
+   return 0;
+}
+
+void *handle_request(void *arg) {
+	// El thread copia el mensaje a un mensaje local 
+	pthread_mutex_lock(&mutex_mensaje);
+
+	struct svc_req *rqstp = (struct svc_req *)arg;
+	mensaje_no_copiado = false;
+	pthread_cond_signal(&cond_mensaje);
+
+	pthread_mutex_unlock(&mutex_mensaje);
+   
+    // Lógica para procesar la solicitud
+
+    return NULL;
+}

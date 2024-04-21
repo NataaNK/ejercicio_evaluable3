@@ -21,4 +21,10 @@ int main(int argc, char *argv[]){
     double vector[4] = {1, 2, 3 ,4};
     set_value(1, "caca", 4, vector);
     set_value(1, "caca", 4, vector);
+    int i;
+    double v[MAX_N];
+    char a[MAXSIZE];
+    get_value(4, a, &i, v);
+    delete_key(4);
+    modify_value(4, "mal", 4, vector);
 }

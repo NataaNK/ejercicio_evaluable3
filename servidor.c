@@ -4,7 +4,6 @@
  * as a guideline for developing your own functions.
  */
 
-#include <mqueue.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>

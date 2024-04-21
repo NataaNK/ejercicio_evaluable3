@@ -54,16 +54,7 @@ int main(int argc, char *argv[]){
         double vector2[MAX_N];
         printf("Return del get_value(): %d\n", get_value(5, value1, &N_value2, vector2));
         printf("Valores obtenidos: %s, %d, [%f, %f]\n", value1, N_value2, vector2[0], vector2[1]);
-        // Prueba 8: Modify_value()
-        double vector3[3] = {1, 2, 3};
-        int N_value2_2 = 3;
-        printf("Return del modify_value(): %d\n", modify_value(5, "Pera", N_value2_2, vector3));
-        // Prueba 9: Delete_key()
-        printf("Return del delete_key(): %d\n", delete_key(5));
-        // Prueba 10: Exist()
-        set_value(6, "Naranja", 2, vector1);
-        printf("Return del exist(): %d\n", exist(6)); // Exist: True
-        printf("Return del exist(): %d\n", exist(5)); // Exist: False
+
     }
     else if (num_client == 2) {
         // Cliente que hace set

@@ -1,0 +1,16 @@
+Return del init(): 0
+Error: Value1 debe ser un string de 255 caracteres o menor
+Return del set_value(): -1
+Error: N_value2 debe ser 32 o menor
+Return del set_value(): -1
+Error: los argumentos deben ser punteros no nulos
+Return del get_value(): -1
+Error: los argumentos deben ser punteros no nulos
+Return del get_value(): -1
+Return del set_value(): 0
+Return del get_value(): 0
+Valores obtenidos: "Manzana", 2, [1.000000, 2.000000]
+Return del modify_value(): 0
+Return del delete_key(): 0
+Return del exist(): 1
+Return del exist(): 0

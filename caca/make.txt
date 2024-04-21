@@ -1,7 +1,10 @@
 # Compiler
 CC = gcc
-CFLAGS += -g -I/usr/include/tirpc -Wall -Wextra -pedantic -std=c11 -I$(CJSON_DIR) -w
-LDLIBS += -lnsl -lpthread -lrt -ldl -ltirpc -L. -lclaves -Wl,-rpath=$(CJSON_DIR) -Wl,-rpath=$(CJSON_DIR)/$(CJSON_DIR) -lcjson -L$(CJSON_DIR)
+RPCGEN=rpcgen
+
+CFLAGS += -g -I/usr/include/tirpc -Wall -Wextra -pedantic -std=c11 -I$(CJSON_DIR) -w -I -fPIC
+LDLIBS += -lnsl -lpthread -lrt -ldl -ltirpc -L. -lclaves -Wl,-rpath=$(CJSON_DIR) -Wl,-rpath=$(CJSON_DIR)/$(CJSON_DIR) -lcjson -L$(CJSON_DIR) -L/usr/lib64
+RPCFLAGS = -NMa
 
 # cJSON files
 CJSON_DIR = cJSON
@@ -9,38 +12,37 @@ CJSON_LIB = $(CJSON_DIR)/libcjson.so
 CJSON_URL = https://github.com/DaveGamble/cJSON.git
 
 # Files
-SOURCES.x = claves_iu.x
-CLIENT_SRC = cliente.c
-LIB_SRC = claves.c
-LIB_HEADER = claves.h
+RPCSRC=claves_iu.x
+SOURCES_CLNT=claves_clnt.c
+SOURCES_SVC=claves_svc.c
+SOURCES_XDR=claves_xdr.c
+OBJECTS_CLNT=$(SOURCES_CLNT:.c=.o)
+OBJECTS_SVC=$(SOURCES_SVC:.c=.o)
+OBJECTS_XDR=$(SOURCES_XDR:.c=.o)
 
-TARGETS = claves_head.h claves_xdr.c claves_clnt.c claves_svc.c claves.c servidor.c cliente.c
-
-# Object files
-OBJECTS_CLNT = claves_clnt.o claves.o claves_xdr.o
-OBJECTS_SVC = claves_svc.o servidor.o claves_xdr.o
 
 LIBRARY = libclaves.so
 
 .PHONY: all clean cJSON
 
-all : cJSON $(LIBRARY) claves servidor cliente
+all : cJSON $(LIBRARY) cliente servidor
 
-# Link the client (library client)
-claves: $(OBJECTS_CLNT)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
+# rpgen
+$(SOURCES_CLNT) $(SOURCES_SVC) $(SOURCES_XDR): $(RPCSRC)
+	$(RPCGEN) $(RPCFLAGS) $(RPCSRC)
 
-# Link the server
-servidor: $(OBJECTS_SVC)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
+# Biblioteca compartida
+$(LIBRARY): claves.o $(OBJECTS_CLNT) $(OBJECTS_XDR)
+	$(CC) -shared -o $@ $^ $(LDLIBS) -fPIC
 
 # Link the application client
-cliente: $(CLIENT_SRC) $(LIBRARY)
+cliente: cliente.o $(LIBRARY)
+	$(CC) $(CFLAGS) -o $@ cliente.o -L. -lclaves $(LDLIBS)
+	
+# Link the server
+servidor: servidor.o $(OBJECTS_SVC) $(OBJECTS_XDR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-# Library compilation
-$(LIBRARY): $(LIB_SRC:.c=.o)
-	$(CC) -shared -o $@ $^
 
 # cJSON target
 cJSON: $(CJSON_LIB)
@@ -50,8 +52,8 @@ $(CJSON_LIB):
 	cd $(CJSON_DIR) && make
 
 # Compile object files from C sources
-%.o: %.c $(LIB_HEADER)
-	$(CC) $(CFLAGS) -fPIC -c -o $@ $<
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@ -fPIC
 
 clean:
-	rm -f *.o $(TARGETS) claves servidor cliente $(LIBRARY)
+	rm -f *.o cliente servidor $(LIBRARY)

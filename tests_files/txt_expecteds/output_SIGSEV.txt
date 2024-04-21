@@ -1,0 +1,4 @@
+Return del init(): 0
+Error, revise los argumentos introducidos: Debe introducirse un string en valor1,
+value2_N debe corresponder con el tamaño real del vector, los pointers en modify_value()
+deben ser válidos, ...

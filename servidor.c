@@ -51,7 +51,7 @@ init_1_svc(int *result, struct svc_req *rqstp)
 	}
 	fclose(fp);
 
-	return retval;
+	return &result;
 }
 
 
@@ -68,7 +68,7 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1;  
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 
 	// Crear entrada en el json, con la clave como key
@@ -90,7 +90,7 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1;  
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 
 	cJSON *array = cJSON_AddArrayToObject(json, list_key);
@@ -110,19 +110,19 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		*result = -1;  
 		cJSON_free(json_str);
         cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 	
 	// Liberar JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
 	
-	return retval;
+	return &result;
 }
 
 
 bool_t
-get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
+get_value_1_svc(GetValueArgs *arg1, int *result,  struct svc_req *rqstp)
 {
 	bool_t retval = 0;
 	*result = 0;  
@@ -134,7 +134,7 @@ get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1;  
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 	
 
@@ -148,14 +148,14 @@ get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		};
 	*/
 	char list_key[MAXSIZE];
-	sprintf(list_key, "%d", arg1.key);
+	sprintf(list_key, "%d", arg1->key);
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
-		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1.key);
+		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1->key);
 		retval = -1;
 		*result = -1;  
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 	
 	// Obtenemos su tubla
@@ -182,19 +182,21 @@ get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
 			double V_value2<>;
 		};
 	*/
-	strcpy(arg1.value1, value1_str);
-	*arg1.N_value2 = value2_N_int;
-	arg1.V_value2.V_value2_len = value2_N_int;
+	
+	strcpy(arg1->value1, value1_str);
+	arg1->N_value2 = value2_N_int;
+	arg1->V_value2.V_value2_len = value2_N_int;
 	
 	for (int i = 0; i < value2_N_int; i++) {
-		arg1.V_value2.V_value2_val[i] = double_vector[i];
+		arg1->V_value2.V_value2_val[i] = double_vector[i];
 	}
 
-
+	printf("\n VALORES EN SERVER: %s %d %d %f\n", arg1->value1, arg1->N_value2, arg1->V_value2.V_value2_len, arg1->V_value2.V_value2_val[0]);
+	fflush(stdout);
 	cJSON_Delete(json);
 	free(double_vector);
 
-	return retval;
+	return &result;
 }
 
 
@@ -211,7 +213,7 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1; 
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 
 	// Eliminar entrada
@@ -223,7 +225,7 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1; 
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 
 	cJSON_DeleteItemFromObject(json, list_key);
@@ -238,14 +240,14 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		*result = -1;
 		cJSON_free(json_str); 
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 
 	// Liberar el JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
 
-	return retval;
+	return &result;
 }
 
 
@@ -262,7 +264,7 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 		retval = -1;
 		*result = -1;
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 
 	// Modificar los datos del JSON 
@@ -281,7 +283,7 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 		retval = -1;
 		*result = -1;
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 
 	cJSON_ReplaceItemInArray(item, 0, cJSON_CreateString(arg1.value1));
@@ -298,14 +300,14 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 		*result = -1;
 		cJSON_free(json_str); 
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 
 	// Liberar el JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
 
-	return retval;
+	return &result;
 }
 
 
@@ -321,7 +323,7 @@ exist_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1;
 		cJSON_Delete(json);
-		return retval;
+		return &result;
 	}
 	
 	// Determinar si existe la entrada
@@ -340,7 +342,7 @@ exist_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 	// Liberar cJSON object 
 	cJSON_Delete(json);
 	
-	return retval;
+	return &result;
 }
 
 

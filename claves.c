@@ -78,7 +78,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 				};
 	*/
     set_value_1_arg1.key = key;
-
+	set_value_1_arg1.value1 = malloc(strlen(value1) + 1); // IMPORTANTE, SI DA MAS SIGSEGV EN OTRAS FUNCIONES
 	strcpy(set_value_1_arg1.value1, value1);
     set_value_1_arg1.N_value2 = N_value2;
 	set_value_1_arg1.V_value2.V_value2_len = N_value2;
@@ -95,6 +95,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 	}
 
 	clnt_destroy( clnt );
+	free(set_value_1_arg1.value1);
     return 0; // Éxito
 }
 
@@ -142,20 +143,23 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 	get_value_1_arg1.V_value2.V_value2_len = *N_value2;
 	get_value_1_arg1.V_value2.V_value2_val = V_value2;
 
-	retval_3 = get_value_1(get_value_1_arg1, &result_3, clnt);
+	retval_3 = get_value_1(&get_value_1_arg1, &result_3, clnt);
 	if (retval_3 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 		clnt_destroy( clnt );
 		return -1;
 	}
 
+	printf("\n VALORES EN CLAVES: %s %d %d %f\n", get_value_1_arg1.value1, *get_value_1_arg1.N_value2, get_value_1_arg1.V_value2.V_value2_len, get_value_1_arg1.V_value2.V_value2_val [0]);
     /* Obtener valores e asignarlos a las variables metidas
     por parámetro*/
     strcpy(value1, get_value_1_arg1.value1);
-    *N_value2 = *get_value_1_arg1.N_value2;
-    for (int i=0; i < get_value_1_arg1.N_value2; i++){
+    N_value2 = get_value_1_arg1.N_value2;
+    /*for (int i=0; i < get_value_1_arg1.N_value2; i++){
         V_value2[i] = get_value_1_arg1.V_value2.V_value2_val[i];
-    }
+    }*/
+
+
 
 	clnt_destroy( clnt );
     return 0; // Éxito

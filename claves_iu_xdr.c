@@ -3,7 +3,7 @@
  * It was generated using rpcgen.
  */
 
-#include "claves_head.h"
+#include "claves_iu.h"
 
 bool_t
 xdr_SetValueArgs (XDR *xdrs, SetValueArgs *objp)
@@ -23,15 +23,13 @@ xdr_SetValueArgs (XDR *xdrs, SetValueArgs *objp)
 }
 
 bool_t
-xdr_GetValueArgs (XDR *xdrs, GetValueArgs *objp)
+xdr_GetValueResponse (XDR *xdrs, GetValueResponse *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, &objp->key))
-		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->value1, ~0))
 		 return FALSE;
-	 if (!xdr_pointer (xdrs, (char **)&objp->N_value2, sizeof (int), (xdrproc_t) xdr_int))
+	 if (!xdr_int (xdrs, &objp->N_value2))
 		 return FALSE;
 	 if (!xdr_array (xdrs, (char **)&objp->V_value2.V_value2_val, (u_int *) &objp->V_value2.V_value2_len, ~0,
 		sizeof (double), (xdrproc_t) xdr_double))

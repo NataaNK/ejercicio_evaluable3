@@ -3,7 +3,7 @@
  * It was generated using rpcgen.
  */
 
-#include "claves_head.h"
+#include "claves_iu.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <rpc/pmap_clnt.h>
@@ -29,7 +29,7 @@ _set_value_1 (SetValueArgs  *argp, void *result, struct svc_req *rqstp)
 }
 
 int
-_get_value_1 (GetValueArgs  *argp, void *result, struct svc_req *rqstp)
+_get_value_1 (int  *argp, void *result, struct svc_req *rqstp)
 {
 	return (get_value_1_svc(*argp, result, rqstp));
 }
@@ -57,7 +57,7 @@ claves_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
 	union {
 		SetValueArgs set_value_1_arg;
-		GetValueArgs get_value_1_arg;
+		int get_value_1_arg;
 		int delete_key_1_arg;
 		SetValueArgs modify_value_1_arg;
 		int exist_1_arg;
@@ -65,7 +65,7 @@ claves_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	union {
 		int init_1_res;
 		int set_value_1_res;
-		int get_value_1_res;
+		GetValueResponse get_value_1_res;
 		int delete_key_1_res;
 		int modify_value_1_res;
 		int exist_1_res;
@@ -92,8 +92,8 @@ claves_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		break;
 
 	case GET_VALUE:
-		_xdr_argument = (xdrproc_t) xdr_GetValueArgs;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_argument = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_GetValueResponse;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))_get_value_1;
 		break;
 

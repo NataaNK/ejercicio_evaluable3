@@ -14,7 +14,7 @@
 #include <stddef.h> 
 #include <errno.h> 
 #include <signal.h> 
-#include "claves_head.h"
+#include "claves_iu.h"
 
 /* Mutex para proteger el acceso al archivo data.json */
 //pthread_mutex_t mutex_archivo;
@@ -122,38 +122,27 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 
 
 bool_t
-get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
+get_value_1_svc(int arg1, GetValueResponse *result,  struct svc_req *rqstp)
 {
-	bool_t retval = 0;
-	*result = 0;  
+	bool_t retval = 0; 
 
 	// Leer cotenido base de datos y obtener json
 	cJSON *json = read_json("data.json");
 	if (json == NULL){
 		perror("Error: Unable to read the json file\n");
-		retval = -1;
-		*result = -1;  
+		retval = -1; 
 		cJSON_Delete(json);
 		return &result;
 	}
 	
 
 	// Buscamos el item asocfiado a la key
-	/*
-	struct GetValueArgs {
-			int key;
-			string value1<>;
-			int *N_value2;
-			double V_value2<>;
-		};
-	*/
 	char list_key[MAXSIZE];
-	sprintf(list_key, "%d", arg1.key);
+	sprintf(list_key, "%d", arg1);
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
-		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1.key);
+		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1);
 		retval = -1;
-		*result = -1;  
 		cJSON_Delete(json);
 		return &result;
 	}
@@ -174,28 +163,26 @@ get_value_1_svc(GetValueArgs arg1, int *result,  struct svc_req *rqstp)
 	}
 	
 	// Guardamos el resultado
-	/*
-	struct GetValueArgs {
-			int key;
-			string value1<>;
-			int *N_value2;
-			double V_value2<>;
+	/*	
+		struct GetValueResponse {
+			string value1<>; 
+			int N_value2;      
+			double V_value2<>;  
 		};
 	*/
-	
-	strcpy(arg1.value1, value1_str);
-	arg1.N_value2 = value2_N_int;
-	arg1.V_value2.V_value2_len = value2_N_int;
-	
-	for (int i = 0; i < value2_N_int; i++) {
-		arg1.V_value2.V_value2_val[i] = double_vector[i];
+	result->value1 = malloc(strlen(value1_str) + 1);
+    strcpy(result->value1, value1_str);  
+    result->N_value2 = value2_N_int;
+	result->V_value2.V_value2_val = malloc(value2_N_int * sizeof(double));
+    result->V_value2.V_value2_len = value2_N_int;
+
+	for(int i = 0; i < value2_N_int; i++){
+		result->V_value2.V_value2_val[i] = double_vector[i];
 	}
 
-	printf("\n VALORES EN SERVER: %s %d %d %f\n", arg1.value1, arg1.N_value2, arg1.V_value2.V_value2_len, arg1.V_value2.V_value2_val[0]);
+	printf("\n VALORES EN SERVER: %s %d %d %f\n", result->value1, result->N_value2, result->V_value2.V_value2_len, result->V_value2.V_value2_val[0]);
 	fflush(stdout);
 	cJSON_Delete(json);
-	free(double_vector);
-
 	return &result;
 }
 

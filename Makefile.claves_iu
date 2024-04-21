@@ -13,9 +13,9 @@ CJSON_URL = https://github.com/DaveGamble/cJSON.git
 
 # Files
 RPCSRC=claves_iu.x
-SOURCES_CLNT=claves_clnt.c
-SOURCES_SVC=claves_svc.c
-SOURCES_XDR=claves_xdr.c
+SOURCES_CLNT=claves_iu_clnt.c
+SOURCES_SVC=claves_iu_svc.c
+SOURCES_XDR=claves_iu_xdr.c
 OBJECTS_CLNT=$(SOURCES_CLNT:.c=.o)
 OBJECTS_SVC=$(SOURCES_SVC:.c=.o)
 OBJECTS_XDR=$(SOURCES_XDR:.c=.o)

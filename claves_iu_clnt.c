@@ -4,7 +4,7 @@
  */
 
 #include <memory.h> /* for memset */
-#include "claves_head.h"
+#include "claves_iu.h"
 
 /* Default timeout can be changed using clnt_control() */
 static struct timeval TIMEOUT = { 25, 0 };
@@ -28,11 +28,11 @@ set_value_1(SetValueArgs arg1, int *clnt_res,  CLIENT *clnt)
 }
 
 enum clnt_stat 
-get_value_1(GetValueArgs arg1, int *clnt_res,  CLIENT *clnt)
+get_value_1(int arg1, GetValueResponse *clnt_res,  CLIENT *clnt)
 {
 	return (clnt_call(clnt, GET_VALUE,
-		(xdrproc_t) xdr_GetValueArgs, (caddr_t) &arg1,
-		(xdrproc_t) xdr_int, (caddr_t) clnt_res,
+		(xdrproc_t) xdr_int, (caddr_t) &arg1,
+		(xdrproc_t) xdr_GetValueResponse, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 

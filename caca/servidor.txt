@@ -51,7 +51,7 @@ init_1_svc(int *result, struct svc_req *rqstp)
 	}
 	fclose(fp);
 
-	return &result;
+	return &retval;
 }
 
 
@@ -68,7 +68,7 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1;  
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 
 	// Crear entrada en el json, con la clave como key
@@ -90,7 +90,7 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1;  
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 
 	cJSON *array = cJSON_AddArrayToObject(json, list_key);
@@ -110,52 +110,41 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 		*result = -1;  
 		cJSON_free(json_str);
         cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 	
 	// Liberar JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
 	
-	return &result;
+	return &retval;
 }
 
 
 bool_t
-get_value_1_svc(GetValueArgs *arg1, int *result,  struct svc_req *rqstp)
+get_value_1_svc(GetValueArgs *arg1, GetValueResponse *result,  struct svc_req *rqstp)
 {
-	bool_t retval = 0;
-	*result = 0;  
+	bool_t retval = 0; 
 
 	// Leer cotenido base de datos y obtener json
 	cJSON *json = read_json("data.json");
 	if (json == NULL){
 		perror("Error: Unable to read the json file\n");
-		retval = -1;
-		*result = -1;  
+		retval = -1; 
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 	
 
 	// Buscamos el item asocfiado a la key
-	/*
-	struct GetValueArgs {
-			int key;
-			string value1<>;
-			int *N_value2;
-			double V_value2<>;
-		};
-	*/
 	char list_key[MAXSIZE];
 	sprintf(list_key, "%d", arg1->key);
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
 		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1->key);
 		retval = -1;
-		*result = -1;  
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 	
 	// Obtenemos su tubla
@@ -174,29 +163,29 @@ get_value_1_svc(GetValueArgs *arg1, int *result,  struct svc_req *rqstp)
 	}
 	
 	// Guardamos el resultado
-	/*
-	struct GetValueArgs {
+	/*	
+		struct GetValueResponse {
+			string value1<>; 
+			int N_value2;      
+			double V_value2<>;  
+		};
+
+		struct GetValueArgs {
 			int key;
-			string value1<>;
-			int *N_value2;
-			double V_value2<>;
 		};
 	*/
-	
-	strcpy(arg1->value1, value1_str);
-	arg1->N_value2 = value2_N_int;
-	arg1->V_value2.V_value2_len = value2_N_int;
-	
-	for (int i = 0; i < value2_N_int; i++) {
-		arg1->V_value2.V_value2_val[i] = double_vector[i];
-	}
+    // Asignar valores a la estructura de respuesta
+    result->value1 = strdup(value1_str);  // strdup para asignar memoria
+    result->N_value2 = value2_N_int;
+    result->V_value2.V_value2_val = double_vector;
+    result->V_value2.V_value2_len = value2_N_int;
 
-	printf("\n VALORES EN SERVER: %s %d %d %f\n", arg1->value1, arg1->N_value2, arg1->V_value2.V_value2_len, arg1->V_value2.V_value2_val[0]);
+	printf("\n VALORES EN SERVER: %s %d %d %f\n", result->value1, result->N_value2, result->V_value2.V_value2_val, result->V_value2.V_value2_val[0]);
 	fflush(stdout);
 	cJSON_Delete(json);
-	free(double_vector);
+	free(value1_str);
 
-	return &result;
+	return &retval;
 }
 
 
@@ -213,7 +202,7 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1; 
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 
 	// Eliminar entrada
@@ -225,7 +214,7 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1; 
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 
 	cJSON_DeleteItemFromObject(json, list_key);
@@ -240,14 +229,14 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		*result = -1;
 		cJSON_free(json_str); 
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 
 	// Liberar el JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
 
-	return &result;
+	return &retval;
 }
 
 
@@ -264,7 +253,7 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 		retval = -1;
 		*result = -1;
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 
 	// Modificar los datos del JSON 
@@ -283,7 +272,7 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 		retval = -1;
 		*result = -1;
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 
 	cJSON_ReplaceItemInArray(item, 0, cJSON_CreateString(arg1.value1));
@@ -300,14 +289,14 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 		*result = -1;
 		cJSON_free(json_str); 
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 
 	// Liberar el JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
 
-	return &result;
+	return &retval;
 }
 
 
@@ -323,7 +312,7 @@ exist_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 		retval = -1;
 		*result = -1;
 		cJSON_Delete(json);
-		return &result;
+		return &retval;
 	}
 	
 	// Determinar si existe la entrada
@@ -342,7 +331,7 @@ exist_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 	// Liberar cJSON object 
 	cJSON_Delete(json);
 	
-	return &result;
+	return &retval;
 }
 
 

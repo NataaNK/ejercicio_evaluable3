@@ -82,7 +82,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 	strcpy(set_value_1_arg1.value1, value1);
     set_value_1_arg1.N_value2 = N_value2;
 	set_value_1_arg1.V_value2.V_value2_len = N_value2;
-
+	set_value_1_arg1.V_value2.V_value2_val = malloc(N_value2 * sizeof(double));
     for (int i=0; i < N_value2; i++){
         set_value_1_arg1.V_value2.V_value2_val[i] = V_value2[i];
     }
@@ -96,6 +96,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 
 	clnt_destroy( clnt );
 	free(set_value_1_arg1.value1);
+	free(set_value_1_arg1.V_value2.V_value2_val);
     return 0; // Éxito
 }
 
@@ -138,6 +139,11 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 		};
 	*/
     get_value_1_arg1 = key;
+	get_value_response_1.value1 = value1;
+	get_value_response_1.N_value2 = *N_value2;
+	get_value_response_1.V_value2.V_value2_len = *N_value2;
+	get_value_response_1.V_value2.V_value2_val = V_value2;
+
 
 	retval_3 = get_value_1(get_value_1_arg1, &get_value_response_1, clnt);
 	if (retval_3 != RPC_SUCCESS) {

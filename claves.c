@@ -21,6 +21,9 @@ CLIENT* communication_with_server();
 void handler_SIGSEGV(int sig);
 
 
+
+
+
 int init() {
     // Código para inicializar el servicio
 	CLIENT *clnt;
@@ -156,9 +159,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
     strcpy(value1, get_value_response_1.value1);
     *N_value2 = get_value_response_1.N_value2;
     memcpy(V_value2, get_value_response_1.V_value2.V_value2_val, get_value_response_1.V_value2.V_value2_len * sizeof(double));
-
-    printf("\n VALORES EN CLAVES: %s %d %d %f\n", value1, *N_value2, get_value_response_1.V_value2.V_value2_len, V_value2[0]);
-	fflush(stdout);
+	
 	clnt_destroy( clnt );
     return 0; // Éxito
 }
@@ -230,10 +231,11 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 				};
 	*/
     modify_value_1_arg1.key = key;
+	modify_value_1_arg1.value1 = malloc(strlen(value1) + 1);
 	strcpy(modify_value_1_arg1.value1, value1);
     modify_value_1_arg1.N_value2 = N_value2;
 	modify_value_1_arg1.V_value2.V_value2_len = N_value2;
-	
+	modify_value_1_arg1.V_value2.V_value2_val = malloc(N_value2 * sizeof(double));
     for (int i=0; i < N_value2; i++){
         modify_value_1_arg1.V_value2.V_value2_val[i] = V_value2[i];
     }
@@ -246,6 +248,8 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 		return -1;
 	}
 
+	free(modify_value_1_arg1.value1);
+	free(modify_value_1_arg1.V_value2.V_value2_val);
 	clnt_destroy( clnt );
     return 0; // Éxito
 }
@@ -278,6 +282,7 @@ int exist(int key) {
     clnt_destroy( clnt );
     return result_6; 
 }
+
 
 
 CLIENT* communication_with_server(){

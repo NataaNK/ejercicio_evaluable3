@@ -25,4 +25,9 @@ int main(int argc, char *argv[]){
     double v[MAX_N];
     char a[MAXSIZE];
     get_value(2, a, &i, v);
+    printf("Obtenidos del get: %s %d [%f, %f, %f, %f]", a, i, v[0], v[1], v[2], v[3]);
+    delete_key(1);
+    double vector2[3] = {22222, 4444, 5555};
+    modify_value(2, "cosa mona", 3, vector2);
+    printf("esists: %d", exist(2));
 }

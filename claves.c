@@ -22,8 +22,6 @@ void handler_SIGSEGV(int sig);
 
 
 
-
-
 int init() {
     // Código para inicializar el servicio
 	CLIENT *clnt;
@@ -70,9 +68,13 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 	}
 
 	enum clnt_stat retval_2;
-	int result_2;
+	Response result_2;
 	SetValueArgs set_value_1_arg1;
 	/*
+	struct Response {
+				int result;
+				string error_msg<>;
+	};
 	struct SetValueArgs {
 				int key;
 				string value1<>;
@@ -80,8 +82,11 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 				double V_value2<>;
 				};
 	*/
+	result_2.result = 0;
+	result_2.error_msg = malloc(MAXSIZE);
+	strcpy(result_2.error_msg, "");
     set_value_1_arg1.key = key;
-	set_value_1_arg1.value1 = malloc(strlen(value1) + 1); // IMPORTANTE, SI DA MAS SIGSEGV EN OTRAS FUNCIONES
+	set_value_1_arg1.value1 = malloc(strlen(value1) + 1);
 	strcpy(set_value_1_arg1.value1, value1);
     set_value_1_arg1.N_value2 = N_value2;
 	set_value_1_arg1.V_value2.V_value2_len = N_value2;
@@ -94,6 +99,16 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 	if (retval_2 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 		clnt_destroy( clnt );
+		free(set_value_1_arg1.value1);
+		free(set_value_1_arg1.V_value2.V_value2_val);
+		return -1;
+	}
+
+	if (strcmp(result_2.error_msg, "") != 0){
+		printf("%s", result_2.error_msg);
+		clnt_destroy( clnt );
+		free(set_value_1_arg1.value1);
+		free(set_value_1_arg1.V_value2.V_value2_val);
 		return -1;
 	}
 
@@ -139,6 +154,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 			string value1<>; 
 			int N_value2;      
 			double V_value2<>;  
+			string error_msg<>;
 		};
 	*/
     get_value_1_arg1 = key;
@@ -146,11 +162,17 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 	get_value_response_1.N_value2 = *N_value2;
 	get_value_response_1.V_value2.V_value2_len = *N_value2;
 	get_value_response_1.V_value2.V_value2_val = V_value2;
-
+	get_value_response_1.error_msg = malloc(MAXSIZE);
+	strcpy(get_value_response_1.error_msg, "");
 
 	retval_3 = get_value_1(get_value_1_arg1, &get_value_response_1, clnt);
 	if (retval_3 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
+		if (strcmp(get_value_response_1.error_msg, "") != 0){
+			printf("%s", get_value_response_1.error_msg);
+		}
+		else {
+			clnt_perror (clnt, "call failed");
+		}
 		clnt_destroy( clnt );
 		return -1;
 	}
@@ -177,19 +199,26 @@ int delete_key(int key) {
 	}
 
 	enum clnt_stat retval_4;
-	int result_4;
+	Response result_4;
 	int delete_key_1_arg1;
 	
     delete_key_1_arg1 = key;
+	result_4.error_msg = malloc(MAXSIZE);
+	strcpy(result_4.error_msg, "");
 
 
 	retval_4 = delete_key_1(delete_key_1_arg1, &result_4, clnt);
 	if (retval_4 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
+		if (strcmp(result_4.error_msg, "") != 0){
+			printf("%s", result_4.error_msg);
+		}
+		else {
+			clnt_perror (clnt, "call failed");
+		}
 		clnt_destroy( clnt );
 		return -1;
 	}
-    
+	
 	clnt_destroy( clnt );
     return 0; // Éxito
 }
@@ -220,7 +249,7 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 	}
 
 	enum clnt_stat retval_5;
-	int result_5;
+	Response result_5;
 	SetValueArgs modify_value_1_arg1;
 	/*
 	struct SetValueArgs {
@@ -230,6 +259,8 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 				double V_value2<>;
 				};
 	*/
+	result_5.error_msg = malloc(MAXSIZE);
+	strcpy(result_5.error_msg, "");
     modify_value_1_arg1.key = key;
 	modify_value_1_arg1.value1 = malloc(strlen(value1) + 1);
 	strcpy(modify_value_1_arg1.value1, value1);
@@ -243,7 +274,12 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 
 	retval_5 = modify_value_1(modify_value_1_arg1, &result_5, clnt);
 	if (retval_5 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
+		if (strcmp(result_5.error_msg, "") != 0){
+			printf("%s", result_5.error_msg);
+		}
+		else {
+			clnt_perror (clnt, "call failed");
+		}
 		clnt_destroy( clnt );
 		return -1;
 	}

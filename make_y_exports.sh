@@ -4,7 +4,7 @@
 currentDir=$(pwd)
 
 # Compilar el proyecto
-make -f Makefile.claves_iu
+make -f Makefile.claves
 
 # Bibliotecas y variables de entorno necesarias en tiempo de ejecución
 export LD_LIBRARY_PATH="${currentDir}/ejercicio_evaluable2:${currentDir}/ejercicio_evaluable2/cJSON:$LD_LIBRARY_PATH"

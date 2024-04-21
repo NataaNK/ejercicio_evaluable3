@@ -64,10 +64,10 @@ claves_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	} argument;
 	union {
 		int init_1_res;
-		int set_value_1_res;
+		Response set_value_1_res;
 		GetValueResponse get_value_1_res;
-		int delete_key_1_res;
-		int modify_value_1_res;
+		Response delete_key_1_res;
+		Response modify_value_1_res;
 		int exist_1_res;
 	} result;
 	bool_t retval;
@@ -87,7 +87,7 @@ claves_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 
 	case SET_VALUE:
 		_xdr_argument = (xdrproc_t) xdr_SetValueArgs;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_Response;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))_set_value_1;
 		break;
 
@@ -99,13 +99,13 @@ claves_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 
 	case DELETE_KEY:
 		_xdr_argument = (xdrproc_t) xdr_int;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_Response;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))_delete_key_1;
 		break;
 
 	case MODIFY_VALUE:
 		_xdr_argument = (xdrproc_t) xdr_SetValueArgs;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_Response;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))_modify_value_1;
 		break;
 

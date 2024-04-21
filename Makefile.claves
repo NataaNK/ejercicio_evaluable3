@@ -1,10 +1,8 @@
 # Compiler
 CC = gcc
-RPCGEN=rpcgen
 
 CFLAGS += -g -I/usr/include/tirpc -Wall -Wextra -pedantic -std=c11 -I$(CJSON_DIR) -w -I -fPIC
 LDLIBS += -lnsl -lpthread -lrt -ldl -ltirpc -L. -lclaves -Wl,-rpath=$(CJSON_DIR) -Wl,-rpath=$(CJSON_DIR)/$(CJSON_DIR) -lcjson -L$(CJSON_DIR) -L/usr/lib64
-RPCFLAGS = -NMa
 
 # cJSON files
 CJSON_DIR = cJSON
@@ -12,7 +10,6 @@ CJSON_LIB = $(CJSON_DIR)/libcjson.so
 CJSON_URL = https://github.com/DaveGamble/cJSON.git
 
 # Files
-RPCSRC=claves_iu.x
 SOURCES_CLNT=claves_iu_clnt.c
 SOURCES_SVC=claves_iu_svc.c
 SOURCES_XDR=claves_iu_xdr.c
@@ -27,9 +24,6 @@ LIBRARY = libclaves.so
 
 all : cJSON $(LIBRARY) cliente servidor
 
-# rpgen
-$(SOURCES_CLNT) $(SOURCES_SVC) $(SOURCES_XDR): $(RPCSRC)
-	$(RPCGEN) $(RPCFLAGS) $(RPCSRC)
 
 # Biblioteca compartida
 $(LIBRARY): claves.o $(OBJECTS_CLNT) $(OBJECTS_XDR)

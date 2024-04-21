@@ -4,7 +4,7 @@
  * as a guideline for developing your own functions.
  */
 
-#include "claves_head.h"
+#include "claves_iu.h"
 #include "claves.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +19,7 @@
 /*PROTOTIPOS*/
 CLIENT* communication_with_server();
 void handler_SIGSEGV(int sig);
+
 
 
 int init() {
@@ -82,7 +83,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 	strcpy(set_value_1_arg1.value1, value1);
     set_value_1_arg1.N_value2 = N_value2;
 	set_value_1_arg1.V_value2.V_value2_len = N_value2;
-
+	set_value_1_arg1.V_value2.V_value2_val = malloc(N_value2 * sizeof(double));
     for (int i=0; i < N_value2; i++){
         set_value_1_arg1.V_value2.V_value2_val[i] = V_value2[i];
     }
@@ -96,6 +97,7 @@ int set_value(int key, char *value1, int N_value2, double *V_value2) {
 
 	clnt_destroy( clnt );
 	free(set_value_1_arg1.value1);
+	free(set_value_1_arg1.V_value2.V_value2_val);
     return 0; // Éxito
 }
 
@@ -128,7 +130,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 
 	enum clnt_stat retval_3;
 	int result_3;
-	GetValueArgs get_value_1_arg1;
+	int get_value_1_arg1;
 	GetValueResponse get_value_response_1;
 	/*	
 		struct GetValueResponse {
@@ -136,14 +138,15 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
 			int N_value2;      
 			double V_value2<>;  
 		};
-
-		struct GetValueArgs {
-			int key;
-		};
 	*/
-    get_value_1_arg1.key = key;
+    get_value_1_arg1 = key;
+	get_value_response_1.value1 = value1;
+	get_value_response_1.N_value2 = *N_value2;
+	get_value_response_1.V_value2.V_value2_len = *N_value2;
+	get_value_response_1.V_value2.V_value2_val = V_value2;
 
-	retval_3 = get_value_1(&get_value_1_arg1, &get_value_response_1, clnt);
+
+	retval_3 = get_value_1(get_value_1_arg1, &get_value_response_1, clnt);
 	if (retval_3 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 		clnt_destroy( clnt );
@@ -154,12 +157,7 @@ int get_value(int key, char *value1, int *N_value2, double *V_value2) {
     strcpy(value1, get_value_response_1.value1);
     *N_value2 = get_value_response_1.N_value2;
     memcpy(V_value2, get_value_response_1.V_value2.V_value2_val, get_value_response_1.V_value2.V_value2_len * sizeof(double));
-
-    printf("\n VALORES EN CLAVES: %s %d %d %f\n", value1, *N_value2, get_value_response_1.V_value2.V_value2_len, V_value2[0]);
-
-
-    free(get_value_response_1.value1);
-    free(get_value_response_1.V_value2.V_value2_val);
+	
 	clnt_destroy( clnt );
     return 0; // Éxito
 }
@@ -231,10 +229,11 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 				};
 	*/
     modify_value_1_arg1.key = key;
+	modify_value_1_arg1.value1 = malloc(strlen(value1) + 1);
 	strcpy(modify_value_1_arg1.value1, value1);
     modify_value_1_arg1.N_value2 = N_value2;
 	modify_value_1_arg1.V_value2.V_value2_len = N_value2;
-	
+	modify_value_1_arg1.V_value2.V_value2_val = malloc(N_value2 * sizeof(double));
     for (int i=0; i < N_value2; i++){
         modify_value_1_arg1.V_value2.V_value2_val[i] = V_value2[i];
     }
@@ -247,6 +246,8 @@ int modify_value(int key, char *value1, int N_value2, double *V_value2) {
 		return -1;
 	}
 
+	free(modify_value_1_arg1.value1);
+	free(modify_value_1_arg1.V_value2.V_value2_val);
 	clnt_destroy( clnt );
     return 0; // Éxito
 }
@@ -279,6 +280,7 @@ int exist(int key) {
     clnt_destroy( clnt );
     return result_6; 
 }
+
 
 
 CLIENT* communication_with_server(){

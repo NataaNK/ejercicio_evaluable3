@@ -14,7 +14,7 @@
 #include <stddef.h> 
 #include <errno.h> 
 #include <signal.h> 
-#include "claves_head.h"
+#include "claves_iu.h"
 
 /* Mutex para proteger el acceso al archivo data.json */
 //pthread_mutex_t mutex_archivo;
@@ -29,7 +29,7 @@ int write_json(char *file_path, char *str);
 bool_t
 init_1_svc(int *result, struct svc_req *rqstp)
 {
-	bool_t retval = 0;
+	bool_t retval = TRUE;
 	*result = 0;  
 
 	// Eliminar json anterior
@@ -41,34 +41,33 @@ init_1_svc(int *result, struct svc_req *rqstp)
 	//pthread_mutex_unlock(&mutex_archivo);
 	if (fp == NULL) { 
 		perror("Error: Unable to open the file.\n"); 
-		retval = -1;
+		retval = FALSE;
 		*result = -1;  
 	}
 	else if (fputs("{}", fp) < 0) { 
 		perror("Error: Unable to write to the file.\n"); 
-		retval = -1;
+		retval = FALSE;
 		*result = -1;  
 	}
 	fclose(fp);
-
-	return &retval;
+	return retval;
 }
 
 
 bool_t
 set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 {
-	bool_t retval = 0;
+	bool_t retval = TRUE;
 	*result = 0;  
 
 	// Leer cotenido base de datos y obtener json
 	cJSON *json = read_json("data.json");
 	if (json == NULL){
 		perror("Error: Unable to read the json file\n");
-		retval = -1;
+		retval = FALSE;
 		*result = -1;  
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 
 	// Crear entrada en el json, con la clave como key
@@ -87,10 +86,10 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item != NULL){
 		printf("Set_value() error: La clave %d ya existe.\n", arg1.key);
-		retval = -1;
+		retval = FALSE;
 		*result = -1;  
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 
 	cJSON *array = cJSON_AddArrayToObject(json, list_key);
@@ -106,45 +105,44 @@ set_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp)
 	// Escribir JSON string al archivo
 	if (write_json("data.json", json_str) < 0){
 		perror("Error: Unable to write on the file\n");
-		retval = -1;
+		retval = FALSE;
 		*result = -1;  
 		cJSON_free(json_str);
         cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 	
 	// Liberar JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
 	
-	return &retval;
+	return retval;
 }
 
 
 bool_t
-get_value_1_svc(GetValueArgs *arg1, GetValueResponse *result,  struct svc_req *rqstp)
+get_value_1_svc(int arg1, GetValueResponse *result,  struct svc_req *rqstp)
 {
-	bool_t retval = 0; 
+	bool_t retval = TRUE; 
 
 	// Leer cotenido base de datos y obtener json
 	cJSON *json = read_json("data.json");
 	if (json == NULL){
 		perror("Error: Unable to read the json file\n");
-		retval = -1; 
+		retval = FALSE; 
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 	
-
 	// Buscamos el item asocfiado a la key
 	char list_key[MAXSIZE];
-	sprintf(list_key, "%d", arg1->key);
+	sprintf(list_key, "%d", arg1);
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
-		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1->key);
-		retval = -1;
+		printf("Get_value() error: La clave %d no está en la base de datos.\n", arg1);
+		retval = FALSE;
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 	
 	// Obtenemos su tubla
@@ -169,40 +167,37 @@ get_value_1_svc(GetValueArgs *arg1, GetValueResponse *result,  struct svc_req *r
 			int N_value2;      
 			double V_value2<>;  
 		};
-
-		struct GetValueArgs {
-			int key;
-		};
 	*/
-    // Asignar valores a la estructura de respuesta
-    result->value1 = strdup(value1_str);  // strdup para asignar memoria
+	result->value1 = malloc(strlen(value1_str) + 1);
+    strcpy(result->value1, value1_str);  
     result->N_value2 = value2_N_int;
-    result->V_value2.V_value2_val = double_vector;
+	result->V_value2.V_value2_val = malloc(value2_N_int * sizeof(double));
     result->V_value2.V_value2_len = value2_N_int;
 
-	printf("\n VALORES EN SERVER: %s %d %d %f\n", result->value1, result->N_value2, result->V_value2.V_value2_val, result->V_value2.V_value2_val[0]);
-	fflush(stdout);
-	cJSON_Delete(json);
-	free(value1_str);
+	for(int i = 0; i < value2_N_int; i++){
+		result->V_value2.V_value2_val[i] = double_vector[i];
+	}
 
-	return &retval;
+	free(double_vector);
+	cJSON_Delete(json);
+	return retval;
 }
 
 
 bool_t
 delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 {
-	bool_t retval = 0;
+	bool_t retval = TRUE;
 	*result = 0;  
 
 	// Leer cotenido base de datos y obtener json
 	cJSON *json = read_json("data.json");
 	if (json == NULL){
 		perror("Error: Unable to read the json file\n");
-		retval = -1;
+		retval = FALSE;
 		*result = -1; 
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 
 	// Eliminar entrada
@@ -211,10 +206,10 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
 		printf("Delete_key() error: La clave %d no está en la base de datos.\n", arg1);
-		retval = -1;
+		retval = FALSE;
 		*result = -1; 
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 
 	cJSON_DeleteItemFromObject(json, list_key);
@@ -225,35 +220,35 @@ delete_key_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 	// Escribir JSON string al archivo
 	if (write_json("data.json", json_str) < 0){
 		perror("Error: Unable to write on the file\n");
-		retval = -1;
+		retval = FALSE;
 		*result = -1;
 		cJSON_free(json_str); 
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 
 	// Liberar el JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
 
-	return &retval;
+	return retval;
 }
 
 
 bool_t
 modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 
-	bool_t retval = 0;
+	bool_t retval = TRUE;
 	*result = 0;
 
 	// Leer cotenido base de datos y obtener json
 	cJSON *json = read_json("data.json");
 	if (json == NULL){
 		perror("Error: Unable to read the json file\n");
-		retval = -1;
+		retval = FALSE;
 		*result = -1;
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 
 	// Modificar los datos del JSON 
@@ -269,10 +264,10 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, list_key);
 	if (item == NULL){
 		printf("Modify_value() error: La clave %d no está en la base de datos.\n", arg1.key);
-		retval = -1;
+		retval = FALSE;
 		*result = -1;
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 
 	cJSON_ReplaceItemInArray(item, 0, cJSON_CreateString(arg1.value1));
@@ -285,34 +280,34 @@ modify_value_1_svc(SetValueArgs arg1, int *result,  struct svc_req *rqstp){
 	// Escribir JSON string al archivo
 	if (write_json("data.json", json_str) < 0){
 		perror("Error: Unable to write on the file\n");
-		retval = -1;
+		retval = FALSE;
 		*result = -1;
 		cJSON_free(json_str); 
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 
 	// Liberar el JSON string y cJSON object 
 	cJSON_free(json_str); 
 	cJSON_Delete(json);
 
-	return &retval;
+	return retval;
 }
 
 
 bool_t
 exist_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 {
-	bool_t retval = 0;
+	bool_t retval = TRUE;
 
 	// Leer cotenido base de datos y obtener json
 	cJSON *json = read_json("data.json");
 	if (json == NULL){
 		perror("Error: Unable to read the json file\n");
-		retval = -1;
+		retval = FALSE;
 		*result = -1;
 		cJSON_Delete(json);
-		return &retval;
+		return retval;
 	}
 	
 	// Determinar si existe la entrada
@@ -331,7 +326,7 @@ exist_1_svc(int arg1, int *result,  struct svc_req *rqstp)
 	// Liberar cJSON object 
 	cJSON_Delete(json);
 	
-	return &retval;
+	return retval;
 }
 
 

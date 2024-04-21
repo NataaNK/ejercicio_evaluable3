@@ -33,8 +33,15 @@ struct GetValueResponse {
 		u_int V_value2_len;
 		double *V_value2_val;
 	} V_value2;
+	char *error_msg;
 };
 typedef struct GetValueResponse GetValueResponse;
+
+struct Response {
+	int result;
+	char *error_msg;
+};
+typedef struct Response Response;
 
 #define CLAVES_PROG 99
 #define CLAVES_VERS 1
@@ -46,17 +53,17 @@ typedef struct GetValueResponse GetValueResponse;
 extern  enum clnt_stat init_1(int *, CLIENT *);
 extern  bool_t init_1_svc(int *, struct svc_req *);
 #define SET_VALUE 2
-extern  enum clnt_stat set_value_1(SetValueArgs , int *, CLIENT *);
-extern  bool_t set_value_1_svc(SetValueArgs , int *, struct svc_req *);
+extern  enum clnt_stat set_value_1(SetValueArgs , Response *, CLIENT *);
+extern  bool_t set_value_1_svc(SetValueArgs , Response *, struct svc_req *);
 #define GET_VALUE 3
 extern  enum clnt_stat get_value_1(int , GetValueResponse *, CLIENT *);
 extern  bool_t get_value_1_svc(int , GetValueResponse *, struct svc_req *);
 #define DELETE_KEY 4
-extern  enum clnt_stat delete_key_1(int , int *, CLIENT *);
-extern  bool_t delete_key_1_svc(int , int *, struct svc_req *);
+extern  enum clnt_stat delete_key_1(int , Response *, CLIENT *);
+extern  bool_t delete_key_1_svc(int , Response *, struct svc_req *);
 #define MODIFY_VALUE 5
-extern  enum clnt_stat modify_value_1(SetValueArgs , int *, CLIENT *);
-extern  bool_t modify_value_1_svc(SetValueArgs , int *, struct svc_req *);
+extern  enum clnt_stat modify_value_1(SetValueArgs , Response *, CLIENT *);
+extern  bool_t modify_value_1_svc(SetValueArgs , Response *, struct svc_req *);
 #define EXIST 6
 extern  enum clnt_stat exist_1(int , int *, CLIENT *);
 extern  bool_t exist_1_svc(int , int *, struct svc_req *);
@@ -89,10 +96,12 @@ extern int claves_prog_1_freeresult ();
 #if defined(__STDC__) || defined(__cplusplus)
 extern  bool_t xdr_SetValueArgs (XDR *, SetValueArgs*);
 extern  bool_t xdr_GetValueResponse (XDR *, GetValueResponse*);
+extern  bool_t xdr_Response (XDR *, Response*);
 
 #else /* K&R C */
 extern bool_t xdr_SetValueArgs ();
 extern bool_t xdr_GetValueResponse ();
+extern bool_t xdr_Response ();
 
 #endif /* K&R C */
 
